@@ -14,6 +14,10 @@ export class ImageUploader extends LitElement {
           overflow: hidden;
         }
 
+        #input-box {
+          display: flex;
+        }
+
         .filebox input[type='file'] {
           position: absolute;
           width: 1px;
@@ -25,7 +29,6 @@ export class ImageUploader extends LitElement {
           border: 0;
         }
         .filebox label {
-          display: inline-block;
           padding: 0.5em 0.75em;
           color: #999;
           font-size: inherit;
@@ -36,9 +39,10 @@ export class ImageUploader extends LitElement {
           border: 1px solid #ebebeb;
           border-bottom-color: #e2e2e2;
           border-radius: 0.25em;
-        } /* named upload */
+        }
+        /* named upload */
         .filebox .upload-name {
-          display: inline-block;
+          flex: 1;
           padding: 0.5em 0.75em; /* label의 패딩값과 일치 */
           font-size: inherit;
           font-family: inherit;
@@ -58,13 +62,7 @@ export class ImageUploader extends LitElement {
           /* 이미지가 표시될 지역 */
           margin-bottom: 5px;
         }
-        @media (min-width: 768px) {
-          .filebox .upload-display {
-            display: inline-block;
-            margin-right: 5px;
-            margin-bottom: 0;
-          }
-        }
+
         .filebox .upload-thumb-wrap {
           /* 추가될 이미지를 감싸는 요소 */
           display: inline-block;
@@ -88,6 +86,11 @@ export class ImageUploader extends LitElement {
 
   static get properties() {
     return {
+      label: String,
+      showFilename: {
+        type: Boolean,
+        attribute: 'show-filename'
+      },
       _files: Array
     }
   }
@@ -116,25 +119,33 @@ export class ImageUploader extends LitElement {
             `
           )}
         </div>
-        <input class="upload-name" value="파일선택" disabled />
-        <label for="input-file"><mwc-icon>add_photo_alternate</mwc-icon></label>
-        <input
-          id="input-file"
-          type="file"
-          accept="image/*;"
-          class="upload-hidden"
-          multiple
-          @change=${e => {
-            this.onImageFileChanged(e)
-          }}
-        />
+        <div id="input-box">
+          ${this.showFilename
+            ? html`
+                <input
+                  class="upload-name"
+                  value="${this._files.map(f => f.name).join(', ') || 'select image'}"
+                  disabled
+                />
+              `
+            : html``}
+          <label for="input-file"><mwc-icon>add_photo_alternate</mwc-icon></label>
+          <input
+            id="input-file"
+            type="file"
+            accept="image/*;"
+            class="upload-hidden"
+            multiple
+            @change=${e => {
+              this.onImageFileChanged(e)
+            }}
+          />
+        </div>
       </div>
     `
   }
 
   stateChanged(state) {}
-
-  onButtonClick(e) {}
 
   onImageFileChanged(e) {
     this._files = [...this._files, ...Array.from(e.currentTarget.files)]
