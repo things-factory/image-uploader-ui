@@ -1,6 +1,24 @@
 import '@material/mwc-icon'
 import '@material/mwc-icon-button'
+import { client } from '@things-factory/shell'
+import gql from 'graphql-tag'
 import { css, html, LitElement } from 'lit-element'
+
+const CREATE_ATTACHMENTS_GQL = gql`
+  mutation($attachments: [NewAttachment]!) {
+    createAttachments(attachments: $attachments) {
+      id
+      name
+      description
+      mimetype
+      encoding
+      category
+      path
+      createdAt
+      updatedAt
+    }
+  }
+`
 
 export class ImageUploader extends LitElement {
   static get styles() {
@@ -124,7 +142,7 @@ export class ImageUploader extends LitElement {
             ? html`
                 <input
                   class="upload-name"
-                  value="${this._files.map(f => f.name).join(', ') || 'select image'}"
+                  value="${this._files.map(f => f.name).join(', ') || this.label || 'select image'}"
                   disabled
                 />
               `
@@ -142,13 +160,62 @@ export class ImageUploader extends LitElement {
           />
         </div>
       </div>
+      <mwc-icon-button
+        icon="cloud_upload"
+        ?disabled=${this._files.length == 0}
+        @click=${e => {
+          if (e.currentTarget.hasAttribute('disabled')) return
+          this._onUploadButtonClick(e)
+        }}
+      ></mwc-icon-button>
     `
   }
 
-  stateChanged(state) {}
+  get fileInput() {
+    return this.renderRoot.querySelector('#input-file')
+  }
 
   onImageFileChanged(e) {
     this._files = [...this._files, ...Array.from(e.currentTarget.files)]
+  }
+
+  async _onUploadButtonClick(e) {
+    var response = await this.createAttachments('', this._files)
+    var { createAttachments } = response.data
+
+    if (createAttachments.length == 0) return
+
+    this._files = []
+    this.fileInput.value = ''
+
+    this.dispatchEvent(
+      new CustomEvent('image-upload-succeeded', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          files: createAttachments
+        }
+      })
+    )
+  }
+
+  async createAttachments(category, files) {
+    /*
+      ref. https://github.com/jaydenseric/graphql-multipart-request-spec#client
+        - TODO support multiple file upload
+    */
+
+    return await client.mutate({
+      mutation: CREATE_ATTACHMENTS_GQL,
+      variables: {
+        attachments: files.map(file => {
+          return { category, file }
+        })
+      },
+      context: {
+        hasUpload: true
+      }
+    })
   }
 }
 

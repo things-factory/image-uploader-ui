@@ -33,6 +33,8 @@
     "@things-factory/shell": "*"
   },
   "devDependencies": {
-    "@things-factory/attachment-base": "^0.0.3"
+    "@things-factory/attachment-base": "^0.0.20",
+    "@things-factory/auth-ui-jwt": "^0.2.6",
+    "@things-factory/i18n-base": "^0.3.2"
   }
 }

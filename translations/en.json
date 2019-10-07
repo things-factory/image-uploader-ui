@@ -1,3 +1,4 @@
 {
-  "label.module": "module"
+  "label.module": "module",
+  "text.image upload succeeded": "{count} files has been uploaded."
 }

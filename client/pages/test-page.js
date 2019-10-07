@@ -3,7 +3,9 @@ import { html } from 'lit-element'
 import { connect } from 'pwa-helpers/connect-mixin.js'
 import '../image-uploader'
 
-class ImageUploaderUiTest extends connect(store)(PageView) {
+import { i18next } from '@things-factory/i18n-base'
+
+class ImageUploaderUiTest extends PageView {
   static get properties() {
     return {
       imageUploaderUi: String
@@ -13,13 +15,30 @@ class ImageUploaderUiTest extends connect(store)(PageView) {
     return html`
       <section>
         <h2>ImageUploaderUi</h2>
-        <image-uploader></image-uploader>
+        <image-uploader
+          @image-upload-succeeded=${e => {
+            var { files } = e.detail
+
+            var length = Array.from(files).length
+
+            var message = i18next.t('text.image upload succeeded', {
+              count: length
+            })
+
+            document.dispatchEvent(
+              new CustomEvent('notify', {
+                detail: {
+                  level: 'info',
+                  message
+                }
+              })
+            )
+
+            console.log(message)
+          }}
+        ></image-uploader>
       </section>
     `
-  }
-
-  stateChanged(state) {
-    this.imageUploaderUi = state.imageUploaderUi.state_main
   }
 }
 
